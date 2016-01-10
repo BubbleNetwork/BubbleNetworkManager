@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClientI;
-<<<<<<< HEAD
-=======
-import me.JavaExcption.NetworkManager.NetworkClient.UniqueIdentifier;
->>>>>>> origin/master
 import me.JavaExcption.NetworkManager.Packet.Packet;
 import me.JavaExcption.NetworkManager.Packet.PacketAddress;
 import me.JavaExcption.NetworkManager.Packet.PacketType;
@@ -64,7 +60,7 @@ public class NetworkServer {
                         NetworkClientI networkClientI = clients.get(i);
 						if(!clientResponse.contains(networkClientI.getID())) {
 							if(networkClientI.getAttempt() >= MAX_ATTEMPTS) {
-								disconnect(networkClientI, false);
+								disconnect(networkClientI.getID(), false);
 							} else {
 								networkClientI.setAttempt(networkClientI.getAttempt()+1);;
 							}
@@ -78,6 +74,24 @@ public class NetworkServer {
 		};
 		manage.start();
 	}
+	
+	public void disconnect(int id, boolean status){
+		NetworkClientI networkClientI = null;
+		for(int i = 0; i < clients.size(); i++) {
+			if(clients.get(i).getID() == id) {
+				networkClientI = clients.get(i);
+				clients.remove(i);
+				break;
+			}
+		}
+		String message = "";
+		if(status) {
+			message = "Client " + networkClientI.getName() + " (" + networkClientI.getID() + ") @ " + networkClientI.getAddress().toString() + ":" + networkClientI.getPort() + " disconnected.";
+		} else {
+			message = "Client " + networkClientI.getName() + " (" + networkClientI.getID() + ") @ " + networkClientI.getAddress().toString() + ":" + networkClientI.getPort() + " timed out.";
+		}
+		System.err.println("Failed to process disconnect! " + message);
+    }
 	
 	private void receive() {
 		receive = new Thread("Receive") {
@@ -106,13 +120,7 @@ public class NetworkServer {
 		for(NetworkClientI networkClient:clients) {
 			sendPacket(packet, networkClient.getAddress());
 		}
-	}
-
-    public void disconnect(NetworkClientI networkClient,boolean status){
-        clients.remove(networkClient);
-        System.out.println("NetworkClient " + networkClient.getName() +  " @" + networkClient.getAddress().getAddress().toString() + ":" + networkClient.getAddress().getPort() + " " + (status ? "disconnected" : "timed out") + ".");
     }
-
 
 	private void sendMessage(String message, PacketAddress address) {
 		sendPacket(new Packet(PacketType.MESSAGE,message), address);
@@ -129,10 +137,7 @@ public class NetworkServer {
                 }
             }
         };
-<<<<<<< HEAD
         send.start();
-=======
->>>>>>> origin/master
     }
 
     public void addClient(NetworkClientI i){
@@ -142,34 +147,27 @@ public class NetworkServer {
     public void addClientResponse(int i){
         clientResponse.add(i);
     }
-<<<<<<< HEAD
     
-=======
-
->>>>>>> origin/master
     public NetworkClientI getClient(PacketAddress address) throws Exception{
         for(NetworkClientI i:clients){
-            if(i.getAddress().equals(address))return i;
+            if(i.getAddress().equals(address)) return i;
         }
-        throw new Exception("Client not found");
+        throw new Exception("Client was not found!");
     }
 
     public NetworkClientI getClient(int id) throws Exception{
         for(NetworkClientI i:clients){
-            if(i.getID() == id)return i;
+            if(i.getID() == id) return i;
         }
         throw new Exception("Client not found");
     }
 
-<<<<<<< HEAD
-    public void getListOfClients() {
+    public void getAllClients() {
     	for(NetworkClientI i : clients) {
     		System.out.println(i);
     	}
     }
     
-=======
->>>>>>> origin/master
     private void process(DatagramPacket data){
         Packet packet;
         PacketAddress address = new PacketAddress(data.getAddress(),data.getPort());
