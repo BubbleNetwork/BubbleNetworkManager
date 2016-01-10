@@ -7,7 +7,7 @@ public class NetworkManager {
 	public static NetworkClient networkClient;
 	
 	public NetworkManager() {
-		System.out.println("Network client has been started! (" + networkClient.getAddress() + ")");
+		System.out.println("Network client has been started! (" + networkClient.getServerName() + ")");
 	}
 	
 	public static void main(String[] args) {

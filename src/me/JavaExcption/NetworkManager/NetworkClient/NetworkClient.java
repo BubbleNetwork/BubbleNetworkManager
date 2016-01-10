@@ -7,13 +7,17 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import me.JavaExcption.NetworkManager.Packet.Packet;
+import me.JavaExcption.NetworkManager.Packet.PacketAddress;
+import me.JavaExcption.NetworkManager.Packet.PacketType;
+
 public class NetworkClient implements Runnable {
 
 	private DatagramSocket socket;
-	private InetAddress ip;
-	
-	public int port;
-	private String serverName, address;
+
+    private PacketAddress address;
+
+	private String serverName;
 	private int ID = -1;
 
 	private Thread send, listen, run;
@@ -21,32 +25,25 @@ public class NetworkClient implements Runnable {
 	
 	public NetworkClient(String serverName, String address, int port) {
 		this.serverName = serverName;
-		this.address = address;
-		this.port = port;
 		boolean connect = openConnection(address, port);
 		if(!connect) {
 			System.err.println("Connection failed!");
 		}
-		String connection = "/c/" + serverName;
-		send(connection.getBytes());
+		sendPacket(new Packet(PacketType.CONNECT,getServerName()));
 		running = true;
 		run = new Thread(this, "Running");
 		run.start();
 	}
 	
 	
-	public String getAddress() {
+	public PacketAddress getAddress() {
 		return address;
-	}
-	
-	public int getPort() {
-		return port;
 	}
 	
 	public boolean openConnection(String address, int port) {
 		try {
 			socket = new DatagramSocket();
-			ip = InetAddress.getByName(address);
+			this.address = new PacketAddress(InetAddress.getByName(address),port);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			return false; 
@@ -57,50 +54,42 @@ public class NetworkClient implements Runnable {
 		return true;
 	}
 	
-	private void send(String message) {
-		if(message.equals("")) return;
-		message = getServerName() + ": " + message;
-		message = "/m/" + message;
-		send(message.getBytes());
-	}
-	
 	public void listen() {
 		listen = new Thread("Listen") {
 			public void run() {
 				while(running) {
-					String message = receive();
-					if(message.startsWith("/c/")) {
-						setID(Integer.parseInt(message.split("/c/|/e/")[1]));
-						System.out.println("Successfully connected to server! ID: " + getID());
-					} else if(message.startsWith("/m/")) {
-						String text = message.split("/m/|/e/")[1];
-						sendToAll(text);
-					} 
+                    byte[] data = new byte[1024];
+                    DatagramPacket packet = new DatagramPacket(data, data.length);
+
+                    try {
+                        socket.receive(packet);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    process(packet);
 				}
 			}
 		};
 		listen.start();
 	}
-	
-	public String receive() {
-		byte[] data = new byte[1024];
-		DatagramPacket packet = new DatagramPacket(data, data.length);
-		
+
+	public void process(DatagramPacket data){
+        PacketAddress address = new PacketAddress(data.getAddress(),data.getPort());
 		try {
-			socket.receive(packet);
-		} catch (IOException e) {
-			e.printStackTrace();
+			Packet packet = new Packet(data);
+            packet.process(this,address);
+		} catch (Exception e) {
+            System.err.println("Could not receive packet from server");
 		}
-		String message = new String(packet.getData());
-		return message;
 	}
-	
-	public void send(final byte[] data) {
+
+
+    public void sendPacket(final Packet packet){
 		send = new Thread("Send") {
 			public void run() {
-				DatagramPacket packet = new DatagramPacket(data, data.length, ip, port);
+				DatagramPacket data = packet.createData(address);
 				try {
-					socket.send(packet);
+					socket.send(data);
 				} catch (IOException e) {
 					e.printStackTrace();
 					return;
@@ -109,12 +98,14 @@ public class NetworkClient implements Runnable {
 		};
 		send.start();
 	}
-	
-	public void sendToAll(String message) {
-		if(message.equals("")) return;
-		message = "/m/" + message;
-		send(message.getBytes());
-	}
+
+    public void sendMessage(String s){
+        sendPacket(new Packet(PacketType.MESSAGE,getServerName() + ":" + s));
+    }
+
+    public void sendMessageAll(String s){
+        sendPacket(new Packet(PacketType.MESSAGE,s));
+    }
 	
 	public void run() {
 		listen();
