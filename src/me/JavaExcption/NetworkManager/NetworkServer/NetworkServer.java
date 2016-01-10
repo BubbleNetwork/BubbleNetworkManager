@@ -10,6 +10,9 @@ import java.util.List;
 
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClientI;
 import me.JavaExcption.NetworkManager.NetworkClient.UniqueIdentifier;
+import me.JavaExcption.NetworkManager.Packet.Packet;
+import me.JavaExcption.NetworkManager.Packet.PacketAddress;
+import me.JavaExcption.NetworkManager.Packet.PacketType;
 
 public class NetworkServer {
 	
@@ -50,23 +53,23 @@ public class NetworkServer {
 		manage = new Thread("Manage") {
 			public void run() {
 				while(running) {
-					sendToAllNetworkClients("/i/server");
+					sendToAllNetworkClients(new Packet(PacketType.INFORMATION,"server"));
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					for(int i = 0; i < clients.size(); i++) {
-						NetworkClientI networkClientI = clients.get(i);
+					for(int i = 0;i < clients.size(); i++) {
+                        NetworkClientI networkClientI = clients.get(i);
 						if(!clientResponse.contains(networkClientI.getID())) {
-							if(networkClientI.attempt >= MAX_ATTEMPTS) {
-								disconnect(networkClientI.getID(), false);
+							if(networkClientI.getAttempt() >= MAX_ATTEMPTS) {
+								disconnect(networkClientI, false);
 							} else {
-								networkClientI.attempt++;
+								networkClientI.setAttempt(networkClientI.getAttempt()+1);;
 							}
 						} else {
 							clientResponse.remove(new Integer(networkClientI.getID()));
-							networkClientI.attempt = 0;
+							networkClientI.setAttempt(0);
 						}
 					}
 				}
@@ -93,75 +96,71 @@ public class NetworkServer {
 		};
 		receive.start();
 	}
-	
-	private void sendToAllNetworkClients(String message) {
-		if(message.startsWith("/m/")) {
-			String text = message.substring(3);
-			text = text.split("/e/")[0];
-			System.out.println(message);   
-		}
-		for(int i = 0; i < clients.size(); i++) {
-			NetworkClientI networkClient = clients.get(i);
-			send(message.getBytes(), networkClient.address, networkClient.port);
+
+    public void sendToAllNetworkClients(String message){
+        sendToAllNetworkClients(new Packet(PacketType.MESSAGE,message));
+    }
+
+    public void sendToAllNetworkClients(Packet packet) {
+		for(NetworkClientI networkClient:clients) {
+			sendPacket(packet, networkClient.getAddress());
 		}
 	}
-	
-	private void send(final byte[] data, final InetAddress address, final int port) {
-		send = new Thread("Send") {
-			public void run() {
-				DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
-				try {
-					socket.send(packet);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				}
-			}
-		};
-		send.start();
+
+    public void disconnect(NetworkClientI networkClient,boolean status){
+        clients.remove(networkClient);
+        System.out.println("NetworkClient " + networkClient.getName() +  " @" + networkClient.getAddress().getAddress().toString() + ":" + networkClient.getAddress().getPort() + " " + (status ? "disconnected" : "timed out") + ".");
+    }
+
+
+	private void sendMessage(String message, PacketAddress address) {
+		sendPacket(new Packet(PacketType.MESSAGE,message), address);
 	}
-	
-	private void disconnect(int id, boolean status) {
-		NetworkClientI networkClient = null;
-		for(int i = 0; i < clients.size(); i++) {
-			if(clients.get(i).getID() == id) {
-				networkClient = clients.get(i);
-			   clients.remove(i);
-			   break;
-			}
-		}
-		String message = "";
-		if(status) {
-			message = "NetworkClient " + networkClient.name +  " @" + networkClient.address.toString() + ":" + networkClient.port + " disconnected.";
-		} else {
-			message = "NetworkClient " + networkClient.name + " @" + networkClient.address.toString() + ":" + networkClient.port + " timed out.";
-		}
-		System.out.println(message);
-	}
-	
-	private void send(String message, final InetAddress address, int port) {
-		message += "/e/";
-		send(message.getBytes(), address, port);
-	}
-	
-	private void process(DatagramPacket packet) {
-		String string = new String(packet.getData());
-		if(raw) System.out.println(string);
-		if(string.startsWith("/c/")) {
-			int id = UniqueIdentifier.getIdentifier();
-			System.out.println(string.substring(3, string.length()) + "(" + packet.getAddress() + ")" + " has connected! (ID: " + id + ")");
-			clients.add(new NetworkClientI(string.substring(3, string.length()), packet.getAddress(), packet.getPort(), UniqueIdentifier.getIdentifier()));
-			String ID = "/c/" + id;
-			send(ID, packet.getAddress(), packet.getPort());
-		} if(string.startsWith("/m/")) {
-			sendToAllNetworkClients(string);
-		} else if(string.startsWith("/d/")) {
-			String id = string.split("/d/|/e/")[1];
-			disconnect(Integer.parseInt(id), true);
-		} else if(string.startsWith("/i/")) {
-			clientResponse.add(Integer.parseInt(string.split("/i/|/e/")[1]));
-		} else {
-			System.err.println("Could not proccess packet: " + string);
-		}
-	}
+
+    public void sendPacket(final Packet packet, final PacketAddress address){
+        send = new Thread("Send") {
+            public void run() {
+                try {
+                    socket.send(packet.createData(address));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        };
+    }
+
+    public void addClient(NetworkClientI i){
+        clients.add(i);
+    }
+
+    public void addClientResponse(int i){
+        clientResponse.add(i);
+    }
+
+    public NetworkClientI getClient(PacketAddress address) throws Exception{
+        for(NetworkClientI i:clients){
+            if(i.getAddress().equals(address))return i;
+        }
+        throw new Exception("Client not found");
+    }
+
+    public NetworkClientI getClient(int id) throws Exception{
+        for(NetworkClientI i:clients){
+            if(i.getID() == id)return i;
+        }
+        throw new Exception("Client not found");
+    }
+
+    private void process(DatagramPacket data){
+        Packet packet;
+        PacketAddress address = new PacketAddress(data.getAddress(),data.getPort());
+        try {
+            packet = new Packet(data);
+        } catch (Exception e) {
+            System.err.println("Could not process data " + new String(data.getData()));
+            return;
+        }
+        packet.process(this,address);
+    }
 }
