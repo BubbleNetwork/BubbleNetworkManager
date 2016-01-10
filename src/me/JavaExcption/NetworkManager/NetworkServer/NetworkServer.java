@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClientI;
+<<<<<<< HEAD
+=======
+import me.JavaExcption.NetworkManager.NetworkClient.UniqueIdentifier;
+>>>>>>> origin/master
 import me.JavaExcption.NetworkManager.Packet.Packet;
 import me.JavaExcption.NetworkManager.Packet.PacketAddress;
 import me.JavaExcption.NetworkManager.Packet.PacketType;
@@ -125,7 +129,10 @@ public class NetworkServer {
                 }
             }
         };
+<<<<<<< HEAD
         send.start();
+=======
+>>>>>>> origin/master
     }
 
     public void addClient(NetworkClientI i){
@@ -135,7 +142,11 @@ public class NetworkServer {
     public void addClientResponse(int i){
         clientResponse.add(i);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> origin/master
     public NetworkClientI getClient(PacketAddress address) throws Exception{
         for(NetworkClientI i:clients){
             if(i.getAddress().equals(address))return i;
@@ -150,12 +161,15 @@ public class NetworkServer {
         throw new Exception("Client not found");
     }
 
+<<<<<<< HEAD
     public void getListOfClients() {
     	for(NetworkClientI i : clients) {
     		System.out.println(i);
     	}
     }
     
+=======
+>>>>>>> origin/master
     private void process(DatagramPacket data){
         Packet packet;
         PacketAddress address = new PacketAddress(data.getAddress(),data.getPort());

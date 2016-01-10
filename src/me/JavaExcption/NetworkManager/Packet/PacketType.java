@@ -1,16 +1,33 @@
 package me.JavaExcption.NetworkManager.Packet;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
 
+=======
+>>>>>>> origin/master
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClient;
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClientI;
 import me.JavaExcption.NetworkManager.NetworkClient.UniqueIdentifier;
 import me.JavaExcption.NetworkManager.NetworkServer.NetworkServer;
 
+<<<<<<< HEAD
 public class PacketType {
 	
 	private static final Map<Character,PacketType> types = new HashMap<Character, PacketType>();
+=======
+import java.util.*;
+
+/**
+ * The Bubble Network 2016
+ * BubbleNetworkManager-master
+ * 10/01/2016 {11:02}
+ * Created January 2016
+ */
+
+public abstract class PacketType{
+    private static final Map<Character,PacketType> types = new HashMap<Character, PacketType>();
+>>>>>>> origin/master
 
     public static final PacketType
     CONNECT = new PacketType('c'){
@@ -73,4 +90,8 @@ public class PacketType {
 
     public void process(NetworkServer server,PacketAddress address,String message){}
     public void process(NetworkClient client, PacketAddress address, String message){}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/master

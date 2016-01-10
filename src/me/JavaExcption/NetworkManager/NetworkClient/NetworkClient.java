@@ -1,5 +1,9 @@
 package me.JavaExcption.NetworkManager.NetworkClient;
 
+import me.JavaExcption.NetworkManager.Packet.Packet;
+import me.JavaExcption.NetworkManager.Packet.PacketAddress;
+import me.JavaExcption.NetworkManager.Packet.PacketType;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

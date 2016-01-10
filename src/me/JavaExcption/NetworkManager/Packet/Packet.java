@@ -1,5 +1,6 @@
 package me.JavaExcption.NetworkManager.Packet;
 
+<<<<<<< HEAD
 import java.net.DatagramPacket;
 
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClient;
@@ -8,6 +9,21 @@ import me.JavaExcption.NetworkManager.NetworkServer.NetworkServer;
 public class Packet {
 	
 	private PacketType type;
+=======
+import me.JavaExcption.NetworkManager.NetworkClient.NetworkClient;
+import me.JavaExcption.NetworkManager.NetworkServer.NetworkServer;
+
+import java.net.DatagramPacket;
+
+/**
+ * The Bubble Network 2016
+ * BubbleNetworkManager-master
+ * 10/01/2016 {12:08}
+ * Created January 2016
+ */
+public class Packet {
+    private PacketType type;
+>>>>>>> origin/master
     private String data;
 
     public Packet(DatagramPacket packet) throws Exception{
