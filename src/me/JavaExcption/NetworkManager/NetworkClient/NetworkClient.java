@@ -1,9 +1,5 @@
 package me.JavaExcption.NetworkManager.NetworkClient;
 
-import me.JavaExcption.NetworkManager.Packet.Packet;
-import me.JavaExcption.NetworkManager.Packet.PacketAddress;
-import me.JavaExcption.NetworkManager.Packet.PacketType;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -81,7 +77,7 @@ public class NetworkClient implements Runnable {
         PacketAddress address = new PacketAddress(data.getAddress(),data.getPort());
 		try {
 			Packet packet = new Packet(data);
-            packet.process(this,address);
+            packet.process(this, address);
 		} catch (Exception e) {
             System.err.println("Could not receive packet from server");
 		}
