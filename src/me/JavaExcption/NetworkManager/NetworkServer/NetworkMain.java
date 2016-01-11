@@ -12,14 +12,12 @@ public class NetworkMain {
 	}
 	
 	public static void main(String[] args) {
-		int port = 8192;
-		/*
+		int port;
 		if(args.length != 1) {
 			System.out.println("Usage: java -jar Digital15-Server-Manager.jar [port]");
 			return;
 		}
 		port = Integer.parseInt(args[0]);
-		*/
 		new NetworkMain(port);
 	}
 }
