@@ -9,7 +9,6 @@ public class PacketAddress {
 
 	private InetAddress address;
 	private int port;
-	private NetworkClientI client;
 	
 	public PacketAddress(InetAddress address, int port) {
 		this.address = address;
@@ -17,8 +16,7 @@ public class PacketAddress {
 	}
 
 	public NetworkClientI getClient(NetworkServer instance) throws Exception{
-		if(client == null)client = instance.getClient(this);
-		return client;
+		return instance.getClient(this);
 	}
 	
 	public InetAddress getAddress() {

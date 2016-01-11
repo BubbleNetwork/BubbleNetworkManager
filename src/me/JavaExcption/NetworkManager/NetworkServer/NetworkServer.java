@@ -5,7 +5,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import me.JavaExcption.NetworkManager.NetworkClient.NetworkClientI;
 import me.JavaExcption.NetworkManager.Packet.Packet;
@@ -80,9 +82,11 @@ public class NetworkServer {
     }
 	
 	public void stop(NetworkClientI i, Packet packet, boolean status) {
-		for(int x = 0; x < clients.size(); x++) {
-			if(clients.get(x).getID() == i.getID()) {
-				clients.remove(x);
+		//Super efficient
+		Iterator<NetworkClientI> iterator = clients.iterator();
+		while(iterator.hasNext()){
+			if(iterator.next().getID() == i.getID()) {
+				iterator.remove();
 				break;
 			}
 		}
@@ -92,6 +96,7 @@ public class NetworkServer {
 		} else {
 			System.out.println(message + " Timed out!");
 		}
+		i.sendPacket(this,packet);
 	}
     
 	private void receive() {
