@@ -75,8 +75,7 @@ public class NetworkServer {
 		manage.start();
 	}
 	
-	public void disconnect(NetworkClientI i, boolean status){
-<<<<<<< HEAD
+	public void disconnect(NetworkClientI i, boolean status) {
 		stop(i, new Packet(PacketType.DISCONNECT, ""), status);
     }
 	
@@ -94,15 +93,12 @@ public class NetworkServer {
 			System.err.println(message + " Timed out!");
 		}
 	}
-=======
 		clients.remove(i);
 		String message = "Client (ID: " + i.getID() + ") " + i.getName() + " @ " + i.getAddress().getAddress().getCanonicalHostName() + ":" + i.getAddress().getPort();
 		i.sendPacket(this,new Packet(PacketType.DISCONNECT,""));
 		if(status)System.out.println(message + " Disconnected");
 		else System.out.println(message + " Timed out");
     }
->>>>>>> origin/master
-	
 	private void receive() {
 		receive = new Thread("Receive") {
 			public void run() {
