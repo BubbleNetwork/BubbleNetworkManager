@@ -33,8 +33,12 @@ public class NetworkClientI {
 		return attempt;
 	}
 	
-	public void setAttempt(int attempt) {
+	public void setConnectionAttempt(int attempt) {
 		this.attempt = attempt;
+	}
+	
+	public void resetConnectionAttempt() {
+		this.attempt = 0;
 	}
 	
 	public void sendPacket(NetworkServer server, Packet packet) {
