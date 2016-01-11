@@ -28,11 +28,13 @@ public class NetworkClient implements Runnable {
 		boolean connect = openConnection(address, port);
 		if(!connect) {
 			System.err.println("Connection failed!");
+			System.exit(0);
+			return;
 		}
-		sendPacket(new Packet(PacketType.CONNECT,getServerName()));
 		running = true;
 		run = new Thread(this, "Running");
 		run.start();
+		sendPacket(new Packet(PacketType.CONNECT,getServerName()));
 	}
 	
 	
@@ -79,7 +81,9 @@ public class NetworkClient implements Runnable {
 			Packet packet = new Packet(data);
             packet.process(this, address);
 		} catch (Exception e) {
-            System.err.println("Could not receive packet from server");
+			e.printStackTrace();
+            System.err.println("Could not receive packet from server: " + new String(data.getData()));
+			disconnect();
 		}
 	}
 
@@ -97,6 +101,17 @@ public class NetworkClient implements Runnable {
 			}
 		};
 		send.start();
+	}
+
+	public void exit(){
+		running = false;
+		System.out.println("Disconnected");
+		System.exit(0);
+	}
+
+	public void disconnect(){
+		sendPacket(new Packet(PacketType.DISCONNECT,Boolean.toString(true)));
+		exit();
 	}
 
     public void sendMessage(String s){
