@@ -23,7 +23,7 @@ public class NetworkServer {
 	
 	private Thread run, manage, send, receive;
 	
-	private final int MAX_ATTEMPTS = 5;
+	private final int MAX_ATTEMPTS = 7;
 	
 	public NetworkServer(int port) {
 		this.port = port;
@@ -52,7 +52,7 @@ public class NetworkServer {
 				while(running) {
 					sendToAllNetworkClients(new Packet(PacketType.INFORMATION, "server"));
 					try {
-						Thread.sleep(2000);
+						Thread.sleep(3500);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -62,11 +62,11 @@ public class NetworkServer {
 							if(networkClientI.getAttempt() >= MAX_ATTEMPTS) {
 								disconnect(networkClientI, false);
 							} else {
-								networkClientI.setAttempt(networkClientI.getAttempt()+1);;
+								networkClientI.setConnectionAttempt(networkClientI.getAttempt()+1);;
 							}
 						} else {
 							clientResponse.remove(new Integer(networkClientI.getID()));
-							networkClientI.setAttempt(0);
+							networkClientI.resetConnectionAttempt();
 						}
 					}
 				}
@@ -86,14 +86,14 @@ public class NetworkServer {
 				break;
 			}
 		}
-		String message = "Client (ID: " + i.getID() + ") " + i.getName() + " @ " + i.getAddress().getAddress().getCanonicalHostName() + ":" + i.getAddress().getPort();
+		String message = "Client (ID: " + i.getID() + ") " + i.getName() + " @ " + i.getAddress()+ ":" + i.getAddress().getPort();
 		if(status) {
-			System.err.println(message + " Disconnected!");
+			System.out.println(message + " Disconnected!");
 		} else {
-			System.err.println(message + " Timed out!");
+			System.out.println(message + " Timed out!");
 		}
 	}
-    }
+    
 	private void receive() {
 		receive = new Thread("Receive") {
 			public void run() {
