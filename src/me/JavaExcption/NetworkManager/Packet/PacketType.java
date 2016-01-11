@@ -1,5 +1,7 @@
 package me.JavaExcption.NetworkManager.Packet;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,27 +19,41 @@ public class PacketType {
     
     CONNECT = new PacketType('c') {
     	public void process(NetworkServer server,PacketAddress address,String message) {
-            int id = UniqueIdentifier.getIdentifier();
-            System.out.println("(" + address.getAddress() + ")" + " has connected! (ID: " + id + ")");
+            Integer id = UniqueIdentifier.getIdentifier();
+            System.out.println("(" + address.getAddress() + ")" + " has connected! (ID: " + id.toString() + ")");
             NetworkClientI client = new NetworkClientI(message,address,id);
             server.addClient(client);
-            client.sendPacket(server,new Packet(PacketType.CONNECT,String.valueOf(id)));
+            client.sendPacket(server,new Packet(PacketType.CONNECT,id.toString()));
         }
 
         public void process(NetworkClient client, PacketAddress address, String message){
-            int id = Integer.parseInt(message);
+            int id;
+            try {
+                id = NumberFormat.getInstance().parse(message).intValue();
+            } catch (ParseException e) {
+                //Automatic Catch Statement
+                e.printStackTrace();
+                System.err.println("Could not parse ID!");
+                return;
+            }
             client.setID(id);
         }
     },
     
     DISCONNECT = new PacketType('d') {
-        public void process(NetworkServer server, NetworkClientI networkClientI, boolean status) {
+        public void process(NetworkServer server, PacketAddress address,String message) {
+            boolean status = Boolean.valueOf(message);
             try {
-                server.disconnect(networkClientI.getID(), status);
+                server.disconnect(address.getClient(server), status);
             }
             catch(Exception ex){
-                System.err.println("Could not disconnect client with address " + networkClientI.getAddress() + ":" + networkClientI.getPort());
+                ex.printStackTrace();
+                System.err.println("Could not disconnect client with address " + address.getAddress().toString() + ":" + String.valueOf(address.getPort()));
             }
+        }
+
+        public void process(NetworkClient client, PacketAddress address, String message) {
+            client.exit();
         }
     },
     
@@ -68,7 +84,7 @@ public class PacketType {
         this.value = value;
     }
 
-    protected char getChar(){
+    protected Character getChar(){
         return value;
     }
 

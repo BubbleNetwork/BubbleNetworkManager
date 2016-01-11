@@ -12,6 +12,7 @@ public class Packet {
 
     public Packet(DatagramPacket packet) throws Exception {
         String s = new String(packet.getData());
+        if(s.length() < 3)throw new Exception("Invalid packet length");
         type = PacketType.getType(s.charAt(1));
         data = s.substring(3);
     }
@@ -30,7 +31,7 @@ public class Packet {
     }
 
     public DatagramPacket createData(PacketAddress address){
-        String buffer = "/" + String.valueOf(type.getChar()) + "/" + data;
+        String buffer = "/" + getType().getChar().toString() + "/" + getData();
         return new DatagramPacket(buffer.getBytes(),buffer.length(),address.getAddress(),address.getPort());
     }
 
