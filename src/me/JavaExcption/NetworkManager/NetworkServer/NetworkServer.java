@@ -93,11 +93,6 @@ public class NetworkServer {
 			System.err.println(message + " Timed out!");
 		}
 	}
-		clients.remove(i);
-		String message = "Client (ID: " + i.getID() + ") " + i.getName() + " @ " + i.getAddress().getAddress().getCanonicalHostName() + ":" + i.getAddress().getPort();
-		i.sendPacket(this,new Packet(PacketType.DISCONNECT,""));
-		if(status)System.out.println(message + " Disconnected");
-		else System.out.println(message + " Timed out");
     }
 	private void receive() {
 		receive = new Thread("Receive") {
